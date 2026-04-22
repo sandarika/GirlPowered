@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Design Loop Coach</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #F5F3EF;
+    --surface: #FFFFFF;
+    --surface-2: #F0EDE8;
+    --accent: #2563EB;
+    --accent-light: #EFF6FF;
+    --accent-dark: #1E40AF;
+    --text: #1A1814;
+    --text-2: #6B6860;
+    --text-3: #9B9890;
+    --border: #E2DDD6;
+    --border-strong: #C8C3BB;
+    --warning-bg: #FFFBEB;
+    --warning-border: #F59E0B;
+    --warning-text: #92400E;
+    --danger-bg: #FEF2F2;
+    --danger-text: #991B1B;
+    --success-bg: #ECFDF5;
+    --success-text: #065F46;
+    --badge-bg: #E0F2FE;
+    --badge-text: #0C4A6E;
+    --radius: 10px;
+    --radius-lg: 16px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 1.25rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .header-left { display: flex; align-items: center; gap: 1rem; }
+
+  .logo-mark {
+    width: 38px; height: 38px;
+    background: var(--accent);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .logo-mark svg { width: 20px; height: 20px; color: white; }
+
+  .header-titles h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.2rem;
+    font-weight: 400;
+    color: var(--text);
+    line-height: 1.2;
+  }
+
+  .header-titles p {
+    font-size: 0.72rem;
+    color: var(--text-2);
+    font-weight: 400;
+    letter-spacing: 0.01em;
+  }
+
+  .learning-boundary {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    background: var(--warning-bg);
+    border: 1px solid var(--warning-border);
+    border-radius: var(--radius);
+    padding: 0.6rem 0.85rem;
+    max-width: 400px;
+  }
+
+  .boundary-icon {
+    width: 16px; height: 16px;
+    background: var(--warning-border);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+    font-size: 10px;
+    color: white;
+    font-weight: 600;
+  }
+
+  .learning-boundary strong {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--warning-text);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 2px;
+  }
+
+  .learning-boundary p {
+    font-size: 0.7rem;
+    color: var(--warning-text);
+    line-height: 1.4;
+  }
+
+  main { max-width: 900px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+  nav.tabs {
+    display: flex;
+    gap: 4px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 4px;
+    margin-bottom: 1.75rem;
+    overflow-x: auto;
+  }
+
+  nav.tabs button {
+    flex: 1;
+    min-width: 0;
+    padding: 0.55rem 0.75rem;
+    border: none;
+    background: transparent;
+    border-radius: 9px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-2);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+  }
+
+  nav.tabs button:hover { background: var(--surface-2); color: var(--text); }
+
+  nav.tabs button.active {
+    background: var(--accent);
+    color: white;
+  }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; animation: fadeUp 0.2s ease; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .panel-header {
+    margin-bottom: 1.5rem;
+  }
+
+  .panel-header h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.55rem;
+    font-weight: 400;
+    color: var(--text);
+    margin-bottom: 0.3rem;
+  }
+
+  .panel-header p {
+    font-size: 0.85rem;
+    color: var(--text-2);
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+  }
+
+  .card + .card { margin-top: 1rem; }
+
+  .input-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .input-grid.single { grid-template-columns: 1fr; }
+  .input-grid.triple { grid-template-columns: 1fr 1fr 1fr; }
+
+  .field { display: flex; flex-direction: column; gap: 5px; }
+
+  .field label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--text-2);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .field input, .field textarea, .field select {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.875rem;
+    color: var(--text);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.6rem 0.85rem;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    resize: none;
+    outline: none;
+  }
+
+  .field input:focus, .field textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+    background: white;
+  }
+
+  .field input::placeholder, .field textarea::placeholder { color: var(--text-3); }
+
+  .generate-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: var(--radius);
+    padding: 0.65rem 1.4rem;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+  }
+
+  .generate-btn:hover { background: var(--accent-dark); }
+  .generate-btn:active { transform: scale(0.98); }
+
+  .generate-btn svg { width: 15px; height: 15px; }
+
+  .output-area {
+    margin-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    padding-top: 1.5rem;
+    display: none;
+  }
+
+  .output-area.visible { display: block; animation: fadeUp 0.25s ease; }
+
+  .output-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: var(--accent-light);
+    color: var(--accent-dark);
+    border-radius: 20px;
+    padding: 3px 10px;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+
+  .live-demo-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: var(--badge-bg);
+    color: var(--badge-text);
+    border-radius: 20px;
+    padding: 3px 10px;
+    font-size: 0.67rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-left: 0.5rem;
+  }
+
+  .live-dot {
+    width: 5px; height: 5px;
+    background: #0EA5E9;
+    border-radius: 50%;
+    display: inline-block;
+    animation: pulse 1.8s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  .output-section { margin-bottom: 1.25rem; }
+
+  .output-section:last-child { margin-bottom: 0; }
+
+  .output-section-title {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-3);
+    margin-bottom: 0.5rem;
+  }
+
+  .output-block {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.85rem 1rem;
+    font-size: 0.875rem;
+    color: var(--text);
+    line-height: 1.65;
+  }
+
+  .output-block.accent-left {
+    border-left: 3px solid var(--accent);
+    border-radius: 0 var(--radius) var(--radius) 0;
+  }
+
+  .output-block.warning {
+    background: var(--warning-bg);
+    border-color: var(--warning-border);
+    border-left: 3px solid var(--warning-border);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    color: var(--warning-text);
+    font-size: 0.83rem;
+  }
+
+  .output-block.success {
+    background: var(--success-bg);
+    border-left: 3px solid #10B981;
+    border-radius: 0 var(--radius) var(--radius) 0;
+    color: var(--success-text);
+    font-size: 0.83rem;
+  }
+
+  .output-block.danger {
+    background: var(--danger-bg);
+    border-left: 3px solid #EF4444;
+    border-radius: 0 var(--radius) var(--radius) 0;
+    color: var(--danger-text);
+    font-size: 0.83rem;
+  }
+
+  .output-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .output-list li {
+    display: flex;
+    gap: 0.6rem;
+    font-size: 0.875rem;
+    color: var(--text);
+    line-height: 1.5;
+  }
+
+  .output-list li::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 7px;
+  }
+
+  .output-list.questions li::before { background: #8B5CF6; }
+  .output-list.warnings li::before { background: var(--warning-border); }
+
+  .milestone-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .milestone-row {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+  }
+
+  .week-chip {
+    background: var(--accent);
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 600;
+    border-radius: 6px;
+    padding: 3px 8px;
+    min-width: 62px;
+    text-align: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .week-chip.muted { background: var(--surface-2); color: var(--text-2); }
+
+  .milestone-content {
+    font-size: 0.85rem;
+    color: var(--text);
+    line-height: 1.5;
+    flex: 1;
+  }
+
+  .milestone-content strong { font-weight: 500; color: var(--text); }
+  .milestone-content span { color: var(--text-2); font-size: 0.8rem; }
+
+  .two-col-output {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+  }
+
+  .output-pill-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .pill {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 3px 12px;
+    font-size: 0.78rem;
+    color: var(--text-2);
+  }
+
+  .pill.accent {
+    background: var(--accent-light);
+    border-color: #BFDBFE;
+    color: var(--accent-dark);
+  }
+
+  .question-num {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--accent);
+    min-width: 18px;
+  }
+
+  .reflection-starter {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.7rem 1rem;
+    font-size: 0.875rem;
+    font-style: italic;
+    color: var(--text-2);
+    border-left: 3px solid #8B5CF6;
+    border-radius: 0 var(--radius) var(--radius) 0;
+  }
+
+  .reflection-starter + .reflection-starter { margin-top: 0.4rem; }
+
+  .loading-indicator {
+    display: none;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.83rem;
+    color: var(--text-2);
+    margin: 0.75rem 0;
+  }
+
+  .loading-indicator.visible { display: flex; }
+
+  .spinner {
+    width: 14px; height: 14px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  footer {
+    text-align: center;
+    padding: 2rem;
+    font-size: 0.78rem;
+    color: var(--text-3);
+    border-top: 1px solid var(--border);
+    margin-top: 3rem;
+    background: var(--surface);
+  }
+
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 1.25rem 0;
+  }
+
+  @media (max-width: 640px) {
+    header { flex-direction: column; gap: 1rem; align-items: flex-start; }
+    .learning-boundary { max-width: 100%; }
+    .input-grid { grid-template-columns: 1fr; }
+    .input-grid.triple { grid-template-columns: 1fr; }
+    .two-col-output { grid-template-columns: 1fr; }
+    nav.tabs button { font-size: 0.72rem; padding: 0.5rem 0.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <div class="logo-mark">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8">
+        <circle cx="10" cy="10" r="7"/>
+        <path d="M10 6v4l2.5 2.5" stroke-linecap="round"/>
+        <path d="M6 3.5C7.4 2.6 9 2 10.5 2" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="header-titles">
+      <h1>Design Loop Coach</h1>
+      <p>AI-powered project process coach for undergraduate STEM design teams</p>
+    </div>
+  </div>
+  <div class="learning-boundary">
+    <div class="boundary-icon">!</div>
+    <div>
+      <strong>Learning Boundary</strong>
+      <p>This tool supports planning, diagnosis, and reflection. It does <em>not</em> write graded deliverables or generate final technical solutions.</p>
+    </div>
+  </div>
+</header>
+
+<main>
+  <nav class="tabs" role="tablist">
+    <button class="active" onclick="switchTab(0)" role="tab">Scope the Problem</button>
+    <button onclick="switchTab(1)" role="tab">Plan the Timeline</button>
+    <button onclick="switchTab(2)" role="tab">Recover from Failure</button>
+    <button onclick="switchTab(3)" role="tab">Prepare for Review</button>
+    <button onclick="switchTab(4)" role="tab">Reflection Prompts</button>
+  </nav>
+
+  <!-- TAB 1: Scope the Problem -->
+  <div class="tab-panel active" id="tab-0">
+    <div class="panel-header">
+      <h2>Scope the Problem</h2>
+      <p>Define what your team is actually solving — before you build anything.</p>
+    </div>
+    <div class="card">
+      <div class="input-grid">
+        <div class="field">
+          <label>Project Idea</label>
+          <input type="text" id="scope-idea" placeholder="e.g. Smart pill dispenser for college students" value="Smart pill dispenser for college students">
+        </div>
+        <div class="field">
+          <label>Target User</label>
+          <input type="text" id="scope-user" placeholder="e.g. College students with ADHD" value="College students managing daily medications">
+        </div>
+        <div class="field">
+          <label>Main Problem</label>
+          <textarea id="scope-problem" rows="2" placeholder="Describe the core problem in 1–2 sentences">Students forget or skip medications because of unpredictable schedules and no reminder system integrated with their routine.</textarea>
+        </div>
+        <div class="field">
+          <label>Constraints</label>
+          <textarea id="scope-constraints" rows="2" placeholder="Budget, time, tools, technical limits">$200 budget, 14-week semester, no soldering, must use Arduino or Raspberry Pi, team of 4</textarea>
+        </div>
+      </div>
+      <button class="generate-btn" onclick="generateScope()">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 2v2M8 12v2M2 8h2M12 8h2M4.2 4.2l1.4 1.4M10.4 10.4l1.4 1.4M4.2 11.8l1.4-1.4M10.4 5.6l1.4-1.4" stroke-linecap="round"/></svg>
+        Analyze Scope
+      </button>
+
+      <div class="loading-indicator" id="loading-scope">
+        <div class="spinner"></div>
+        <span>Analyzing your scope...</span>
+      </div>
+
+      <div class="output-area" id="output-scope">
+        <div class="output-badge">
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor"><circle cx="5" cy="5" r="5"/></svg>
+          Scope Analysis
+          <span class="live-demo-badge"><span class="live-dot"></span>Live Demo Input</span>
+        </div>
+
+        <div class="output-section">
+          <div class="output-section-title">Refined Problem Statement</div>
+          <div class="output-block accent-left">
+            College students who manage daily prescription medications lack a reliable, low-friction reminder and dispensing system that fits into unpredictable academic schedules — leading to missed doses, inconsistent treatment, and increased health risk.
+          </div>
+        </div>
+
+        <div class="output-section">
+          <div class="output-section-title">Key Assumptions to Validate</div>
+          <ul class="output-list">
+            <li>Students are willing to charge or maintain a device consistently</li>
+            <li>The primary barrier is forgetting, not intentional skipping</li>
+            <li>A physical device is preferred over a smartphone-only solution</li>
+            <li>Students have a consistent enough location (dorm room) to place the dispenser</li>
+          </ul>
+        </div>
+
+        <div class="two-col-output">
+          <div>
+            <div class="output-section-title">In Scope This Semester</div>
+            <ul class="output-list">
+              <li>Single-compartment prototype for 1–2 medications</li>
+              <li>Time-based alert system (buzzer or LED)</li>
+              <li>Basic logging of dispensed vs. missed</li>
+              <li>User testing with 3–5 student volunteers</li>
+            </ul>
+          </div>
+          <div>
+            <div class="output-section-title">Out of Scope</div>
+            <ul class="output-list">
+              <li>Mobile app integration or Bluetooth sync</li>
+              <li>Multi-user or multi-medication management</li>
+              <li>FDA compliance or clinical validation</li>
+              <li>Commercial-grade enclosure or manufacturing</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="output-section">
+          <div class="output-section-title">Project Risks</div>
+          <ul class="output-list warnings">
+            <li>Scope creep — the team may be tempted to add app connectivity, which is a separate semester-long project on its own</li>
+            <li>User research gap — assuming you know what students need without actually talking to them first</li>
+            <li>Hardware unreliability late in the semester when prototyping time is limited</li>
+          </ul>
+        </div>
+
+        <div class="output-section">
+          <div class="output-section-title">3 Questions Your Team Should Discuss This Week</div>
+          <ul class="output-list questions">
+            <li>Have we talked to at least 5 students who take daily medications? What did we learn that surprised us?</li>
+            <li>What does "working prototype" mean for our project — what must it do to count as a success?</li>
+            <li>Which team member owns the user-testing plan, and when does it need to happen to inform our next design iteration?</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 2: Plan the Timeline -->
+  <div class="tab-panel" id="tab-1">
+    <div class="panel-header">
+      <h2>Plan the Timeline</h2>
+      <p>Turn a semester into a realistic, milestone-driven schedule your team can actually follow.</p>
+    </div>
+    <div class="card">
+      <div class="input-grid triple">
+        <div class="field">
+          <label>Total Weeks</label>
+          <input type="text" id="tl-weeks" placeholder="e.g. 14" value="14">
+        </div>
+        <div class="field">
+          <label>Team Size</label>
+          <input type="text" id="tl-team" placeholder="e.g. 4" value="4">
+        </div>
+        <div class="field">
+          <label>Major Deliverables</label>
+          <input type="text" id="tl-deliverables" placeholder="e.g. Proposal, prototype, demo, report" value="Proposal, prototype, design review, final demo, report">
+        </div>
+      </div>
+      <button class="generate-btn" onclick="generateTimeline()">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="3" width="12" height="11" rx="1.5"/><path d="M5 2v2M11 2v2M2 7h12" stroke-linecap="round"/></svg>
+        Build Timeline
+      </button>
+
+      <div class="loading-indicator" id="loading-timeline">
+        <div class="spinner"></div><span>Building your milestone plan...</span>
+      </div>
+
+      <div class="output-area" id="output-timeline">
+        <div class="output-badge">
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor"><circle cx="5" cy="5" r="5"/></svg>
+          Milestone Plan
+          <span class="live-demo-badge"><span class="live-dot"></span>Live Demo Input</span>
+        </div>
+
+        <div class="output-section">
+          <div class="output-section-title">Week-by-Week Milestones</div>
+          <div class="output-block" style="padding: 0; overflow: hidden;">
+            <div class="milestone-grid" style="padding: 0.85rem 1rem; gap: 0.6rem;">
+              <div class="milestone-row"><div class="week-chip">Wks 1–2</div><div class="milestone-content"><strong>Problem discovery</strong> — <span>Talk to users, finalize problem statement, submit project proposal</span></div></div>
+              <div class="milestone-row"><div class="week-chip">Wks 3–4</div><div class="milestone-content"><strong>Conceptual design</strong> — <span>Brainstorm 3+ concepts, sketch rough diagrams, select direction as a team</span></div></div>
+              <div class="milestone-row"><div class="week-chip">Wks 5–6</div><div class="milestone-content"><strong>Design specification</strong> — <span>Define technical requirements, assign component responsibilities, order parts</span></div></div>
+              <div class="milestone-row"><div class="week-chip">Wk 7</div><div class="week-chip" style="min-width:62px; background:#F0FDF4; color:#065F46; border:1px solid #BBF7D0;">Checkpoint ✓</div><div class="milestone-content"><strong>Design Review #1</strong> — <span>Present concept + rationale to instructors</span></div></div>
+              <div class="milestone-row"><div class="week-chip">Wks 8–9</div><div class="milestone-content"><strong>First build</strong> — <span>Assemble proof-of-concept, expect it to partially fail — that's normal</span></div></div>
+              <div class="milestone-row"><div class="week-chip">Wks 10–11</div><div class="milestone-content"><strong>Test + iterate</strong> — <span>Run user tests, document failures, refine design</span></div></div>
+              <div class="milestone-row"><div class="week-chip">Wk 12</div><div class="week-chip" style="min-width:62px; background:#F0FDF4; color:#065F46; border:1px solid #BBF7D0;">Checkpoint ✓</div><div class="milestone-content"><strong>Design Review #2</strong> — <span>Demonstrate working prototype with evidence of iteration</span></div></div>
+              <div class="milestone-row"><div class="week-chip">Wks 13–14</div><div class="milestone-content"><strong>Final polish + report</strong> — <span>Document process, finalize demo, write report, present</span></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="output-section">
+          <div class="output-section-title">Bottleneck Warning</div>
+          <div class="output-block warning">
+            Parts ordering and hardware debugging are the most common schedule killers. If parts aren't ordered by Week 5, your build window collapses into two weeks instead of four. Build in a "parts in hand" checkpoint before you finalize your timeline.
+          </div>
+        </div>
+
+        <div class="output-section">
+          <div class="output-section-title">Preventing Team Siloing</div>
+          <div class="output-block success">
+            With 4 members, the risk is that each person owns a component and the team only integrates at the last minute. Assign one "integration owner" who attends every sub-team check-in and is responsible for the full system working together — not just individual parts.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 3: Recover from Failure -->
+  <div class="tab-panel" id="tab-2">
+    <div class="panel-header">
+      <h2>Recover from Failure</h2>
+      <p>A prototype that doesn't work is not a crisis — it's information. Let's figure out what it's telling you.</p>
+    </div>
+    <div class="card">
+      <div class="input-grid">
+        <div class="field">
+          <label>What Failed in the Prototype</label>
+          <textarea id="fail-what" rows="2" placeholder="Describe what didn't work">The dispenser motor jammed when releasing the pill, and the buzzer alarm wasn't loud enough for students to hear across a dorm room.</textarea>
+        </div>
+        <div class="field">
+          <label>Suspected Reason</label>
+          <textarea id="fail-why" rows="2" placeholder="What does the team think caused it">We think the motor torque is too low for the pill container weight, and we just grabbed a random buzzer without checking decibel specs.</textarea>
+        </div>
+        <div class="field input-grid single">
+          <label>What the Team Learned</label>
+          <textarea id="fail-learned" rows="2" placeholder="What surprised you or what insight did you gain">We realized we never actually tested the motor load before assembling the housing. We also didn't involve any real users in early testing.</textarea>
+        </div>
+      </div>
+      <button class="generate-btn" onclick="generateFailure()">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 8c0 3.3 2.7 6 6 6s6-2.7 6-6-2.7-6-6-6" stroke-linecap="round"/><path d="M2 4v4h4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Diagnose and Reframe
+      </button>
+
+      <div class="loading-indicator" id="loading-failure">
+        <div class="spinner"></div><span>Diagnosing your failure...</span>
+      </div>
+
+      <div class="output-area" id="output-failure">
+        <div class="output-badge">
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor"><circle cx="5" cy="5" r="5"/></svg>
+          Failure Diagnosis
+          <span class="live-demo-badge"><span class="live-dot"></span>Live Demo Input</span>
+        </div>
+
+        <div class="output-section">
+          <div class="output-section-title">Failure Categories Identified</div>
+          <div class="output-pill-list">
+            <span class="pill accent">Spec Gap — motor underpowered for load</span>
+            <span class="pill accent">Component selection error — buzzer not validated</span>
+            <span class="pill accent">Missing pre-test — no bench test before assembly</span>
+            <span class="pill">User context gap — real environment not simulated</span>
+          </div>
+        </div>
+
+        <div class="output-section">
+          <div class="output-section-title">What to Test Next (in order)</div>
+          <ul class="output-list">
+            <li><strong>Measure actual motor torque</strong> vs. the load of your full pill container — use the motor datasheet, not assumptions</li>
+            <li><strong>Spec a replacement buzzer</strong> at 85–90 dB minimum; test at 3 meters in a room with background noise</li>
+            <li><strong>Rebuild test rig separately</strong> before reassembling housing — validate each component in isolation first</li>
+          </ul>
+        </div>
+
+        <div class="output-section">
+          <div class="output-section-title">How to Talk About This Productively</div>
+          <div class="output-block accent-left">
+            In your next team meeting, frame this as: "We discovered two testable failure modes — a torque spec mismatch and an output specification gap. Both are fixable. Here's what we know, and here's our plan." Avoid assigning blame to whoever chose the parts. Focus on what the failure revealed about your testing process.
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="output-section">
+          <div class="output-section-title">3 Iteration Options</div>
+          <ul class="output-list">
+            <li><strong>Swap the motor</strong> — source a higher-torque servo, validate specs first, keep housing design unchanged</li>
+            <li><strong>Redesign the mechanical release</strong> — reduce friction in the dispensing mechanism so even a low-torque motor can actuate it</li>
+            <li><strong>Replace buzzer + add visual alert</strong> — pair a louder alarm with an LED flash for redundancy across contexts</li>
+          </ul>
+        </div>
+
+        <div class="output-block warning">
+          Do not panic and rebuild everything. You have two specific, diagnosable problems. Fix those. Rebuilding from scratch at this stage almost always makes things worse and wastes the most limited resource you have — time.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 4: Prepare for Review -->
+  <div class="tab-panel" id="tab-3">
+    <div class="panel-header">
+      <h2>Prepare for Review</h2>
+      <p>Walk into your design review with a clear strategy — not just slides.</p>
+    </div>
+    <div class="card">
+      <div class="input-grid">
+        <div class="field">
+          <label>Current Project Stage</label>
+          <input type="text" id="rev-stage" placeholder="e.g. Post-prototype, pre-final" value="Post first prototype, mid-semester">
+        </div>
+        <div class="field">
+          <label>Audience</label>
+          <input type="text" id="rev-audience" placeholder="e.g. Course instructors, industry judges" value="Two course instructors and one industry mentor from biomedical engineering">
+        </div>
+        <div class="field input-grid single">
+          <label>Biggest Weakness Right Now</label>
+          <textarea id="rev-weakness" rows="2" placeholder="Be honest — what is your team most worried about?">Our prototype looks rough and the dispenser mechanism jammed once during testing. We don't have enough user data yet.</textarea>
+        </div>
+      </div>
+      <button class="generate-btn" onclick="generateReview()">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M13 4L6 11l-3-3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Prepare Review Strategy
+      </button>
+
+      <div class="loading-indicator" id="loading-review">
+        <div class="spinner"></div><span>Building your review strategy...</span>
+      </div>
+
+      <div class="output-area" id="output-review">
+        <div class="output-badge">
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor"><circle cx="5" cy="5" r="5"/></svg>
+          Review Strategy
+          <span class="live-demo-badge"><span class="live-dot"></span>Live Demo Input</span>
+        </div>
+
+        <div class="output-section">
+          <div class="output-section-title">3 Questions Reviewers Are Likely to Ask</div>
+          <ul class="output-list questions">
+            <li style="align-items:flex-start;"><span class="question-num">Q1</span> <span>"How did you decide on this design direction over alternatives — what did you rule out and why?"</span></li>
+            <li style="align-items:flex-start;"><span class="question-num">Q2</span> <span>"You mentioned the mechanism jammed — what's your root cause analysis, and how are you fixing it before the final demo?"</span></li>
+            <li style="align-items:flex-start;"><span class="question-num">Q3</span> <span>"Have you tested this with actual users? What feedback have you received, and how has it changed your design?"</span></li>
+          </ul>
+        </div>
+
+        <div class="output-section">
+          <div class="output-section-title">How to Defend Your Choices</div>
+          <div class="output-block accent-left">
+            For every major decision, be ready to say: "We chose X because it met our constraint of Y, and we considered Z but ruled it out because of [specific reason]." Reviewers are testing whether you made informed, intentional decisions — not whether you chose perfectly. Show your reasoning.
+          </div>
+        </div>
+
+        <div class="output-section">
+          <div class="output-section-title">One Weakness to Acknowledge Honestly</div>
+          <div class="output-block danger">
+            Acknowledge the limited user data directly: "We have informal feedback from two users, but our formal testing plan starts next week. We made preliminary design choices based on [rationale] and expect to validate or revise after testing." This is far better than hoping no one notices.
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="output-section">
+          <div class="output-section-title">3 Content Priorities for Your Slides or Demo</div>
+          <ul class="output-list">
+            <li><strong>Your process, not just your product</strong> — show the iteration: what you tried, what failed, what you changed</li>
+            <li><strong>Your decision criteria</strong> — a one-slide matrix or written rationale showing why you made key choices</li>
+            <li><strong>Evidence of forward momentum</strong> — your current test plan, next steps, and timeline to a working final demo</li>
+          </ul>
+        </div>
+
+        <div class="output-section">
+          <div class="output-section-title">Evidence to Bring</div>
+          <div class="output-block success">
+            Bring your physical prototype — even if imperfect. A real device you can point to (even a broken one) is dramatically more credible than polished slides. If it jams, say: "This is exactly the failure we're diagnosing." Reviewers in engineering know prototypes fail.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 5: Reflection Prompts -->
+  <div class="tab-panel" id="tab-4">
+    <div class="panel-header">
+      <h2>Reflection Prompts</h2>
+      <p>Reflection is a skill. These prompts are starting points — the thinking and writing are yours to do.</p>
+    </div>
+    <div class="card">
+      <div class="input-grid">
+        <div class="field">
+          <label>Your Role on the Team</label>
+          <input type="text" id="ref-role" placeholder="e.g. Hardware lead, project manager" value="Hardware lead and co-designer">
+        </div>
+        <div class="field">
+          <label>Biggest Challenge Faced</label>
+          <input type="text" id="ref-challenge" placeholder="e.g. Team disagreement, technical failure" value="Prototype failure in week 9 and disagreement about whether to pivot">
+        </div>
+        <div class="field input-grid single">
+          <label>An Important Decision Your Team Made</label>
+          <textarea id="ref-decision" rows="2" placeholder="Describe one key team decision">We decided to keep the mechanical dispensing mechanism instead of switching to a manual pull design after the motor jammed.</textarea>
+        </div>
+      </div>
+      <button class="generate-btn" onclick="generateReflection()">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 2C4.7 2 2 4.7 2 8s2.7 6 6 6 6-2.7 6-6-2.7-6-6-6zm0 3v3l2 2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Generate Reflection Prompts
+      </button>
+
+      <div class="loading-indicator" id="loading-reflection">
+        <div class="spinner"></div><span>Generating your reflection prompts...</span>
+      </div>
+
+      <div class="output-area" id="output-reflection">
+        <div class="output-badge">
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor"><circle cx="5" cy="5" r="5"/></svg>
+          Reflection Prompts
+          <span class="live-demo-badge"><span class="live-dot"></span>Live Demo Input</span>
+        </div>
+
+        <div class="output-block danger" style="margin-bottom: 1.25rem;">
+          <strong>Important:</strong> These are prompts only. You must write your own reflection in your own words. Submitting AI-generated text as personal reflection is academic dishonesty. Your instructor is evaluating your thinking, not your ability to generate a prompt.
+        </div>
+
+        <div class="output-section">
+          <div class="output-section-title">5 Reflection Questions</div>
+          <ul class="output-list questions">
+            <li style="align-items:flex-start;"><span class="question-num">1.</span><span>When the motor jammed and the team disagreed about pivoting, what was your instinct — and in hindsight, was it right? What does that tell you about how you make decisions under pressure?</span></li>
+            <li style="align-items:flex-start;"><span class="question-num">2.</span><span>As hardware lead, what would you do differently in the first four weeks of the project to prevent the failure that happened in Week 9?</span></li>
+            <li style="align-items:flex-start;"><span class="question-num">3.</span><span>The team chose to stay with the mechanical mechanism rather than pivot. How did you personally contribute to or resist that decision, and what were the consequences?</span></li>
+            <li style="align-items:flex-start;"><span class="question-num">4.</span><span>What did you assume about your users that turned out to be wrong — and how did you find out?</span></li>
+            <li style="align-items:flex-start;"><span class="question-num">5.</span><span>If you had to describe your team's design process to a new student starting this course, what would you tell them to do differently?</span></li>
+          </ul>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="output-section">
+          <div class="output-section-title">3 Sentence Starters</div>
+          <div class="reflection-starter">The moment I realized our process needed to change was when...</div>
+          <div class="reflection-starter">As hardware lead, the decision I most struggled with was... because...</div>
+          <div class="reflection-starter">The failure in Week 9 changed how I think about [testing / teamwork / design] because...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  This tool is designed to support student thinking, not replace it. &nbsp;·&nbsp; Design Loop Coach &nbsp;·&nbsp; Built for undergraduate STEM design teams
+</footer>
+
+<script>
+  function switchTab(index) {
+    document.querySelectorAll('.tab-panel').forEach((p, i) => {
+      p.classList.toggle('active', i === index);
+    });
+    document.querySelectorAll('nav.tabs button').forEach((b, i) => {
+      b.classList.toggle('active', i === index);
+    });
+  }
+
+  function simulateGenerate(loadingId, outputId, delay) {
+    const loading = document.getElementById(loadingId);
+    const output = document.getElementById(outputId);
+    loading.classList.add('visible');
+    output.classList.remove('visible');
+    setTimeout(() => {
+      loading.classList.remove('visible');
+      output.classList.add('visible');
+      output.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, delay || 900);
+  }
+
+  function generateScope() { simulateGenerate('loading-scope', 'output-scope', 900); }
+  function generateTimeline() { simulateGenerate('loading-timeline', 'output-timeline', 1100); }
+  function generateFailure() { simulateGenerate('loading-failure', 'output-failure', 1000); }
+  function generateReview() { simulateGenerate('loading-review', 'output-review', 850); }
+  function generateReflection() { simulateGenerate('loading-reflection', 'output-reflection', 750); }
+</script>
+
+</body>
+</html>
