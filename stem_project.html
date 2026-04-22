@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STEM Group Project Manager</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        header {
+            text-align: center;
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .team-section {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .team-members {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        .team-member {
+            background-color: #e8f5e8;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .team-member input, .team-member textarea {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .team-member label {
+            display: block;
+            font-weight: bold;
+            margin-top: 10px;
+            text-align: left;
+        }
+        .calendar-section {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .calendar {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+        }
+        .calendar-day {
+            border: 1px solid #ddd;
+            padding: 10px;
+            min-height: 80px;
+            background-color: #fafafa;
+            position: relative;
+        }
+        .calendar-day:hover {
+            background-color: #e8f5e8;
+        }
+        .calendar-day-header {
+            font-weight: bold;
+            background-color: #4CAF50;
+            color: white;
+            padding: 5px;
+            text-align: center;
+        }
+        .task-form-section {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        form {
+            display: grid;
+            gap: 10px;
+            max-width: 400px;
+        }
+        label {
+            font-weight: bold;
+        }
+        input, select, button {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .tasks-section {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .task-item {
+            background-color: #f9f9f9;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            border-left: 4px solid #4CAF50;
+        }
+        .task-date {
+            font-weight: bold;
+            color: #4CAF50;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>STEM Group Project Manager</h1>
+        <p>Collaborative project management for our STEM prototype - Final presentation: Week 12</p>
+    </header>
+
+    <section class="team-section">
+        <h2>Our Team</h2>
+        <p>Enter your team member information below:</p>
+        <div class="team-members" id="teamMembers">
+            <!-- Team member forms will be generated here -->
+        </div>
+        <button id="saveTeam" style="margin-top: 20px;">Save Team Information</button>
+    </section>
+
+    <section class="calendar-section">
+        <div class="calendar-header">
+            <button id="prevMonth">&lt; Previous</button>
+            <h2 id="monthYear">April 2026</h2>
+            <button id="nextMonth">Next &gt;</button>
+        </div>
+        <div class="calendar" id="calendar">
+            <!-- Calendar will be generated here -->
+        </div>
+    </section>
+
+    <section class="task-form-section">
+        <h2>Create New Task</h2>
+        <form id="taskForm">
+            <label for="taskName">Task Name:</label>
+            <input type="text" id="taskName" required>
+
+            <label for="taskDescription">Description:</label>
+            <textarea id="taskDescription" rows="3"></textarea>
+
+            <label for="taskDate">Due Date:</label>
+            <input type="date" id="taskDate" required>
+
+            <label for="assignedTo">Assigned to (hold Ctrl/Cmd to select multiple):</label>
+            <select id="assignedTo" multiple required>
+                <!-- Options will be populated by JavaScript -->
+            </select>
+
+            <label for="priority">Priority:</label>
+            <select id="priority">
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+            </select>
+
+            <button type="submit">Add Task</button>
+        </form>
+    </section>
+
+    <section class="tasks-section">
+        <h2>Project Tasks</h2>
+        <div id="tasksList">
+            <!-- Tasks will be displayed here -->
+        </div>
+    </section>
+
+    <script>
+        // Team members data
+        let teamMembers = JSON.parse(localStorage.getItem('stemTeamMembers')) || [
+            { name: '', major: '', strengths: '' },
+            { name: '', major: '', strengths: '' },
+            { name: '', major: '', strengths: '' },
+            { name: '', major: '', strengths: '' }
+        ];
+
+        // Calendar functionality
+        let currentDate = new Date();
+        let tasks = JSON.parse(localStorage.getItem('stemTasks')) || [];
+        let suggestedTasksAdded = localStorage.getItem('suggestedTasksAdded') === 'true';
+
+        function addSuggestedTasks() {
+            if (suggestedTasksAdded) return;
+            
+            const startDate = new Date();
+            const week6 = new Date(startDate);
+            week6.setDate(startDate.getDate() + 42); // 6 weeks
+            const week11 = new Date(startDate);
+            week11.setDate(startDate.getDate() + 77); // 11 weeks
+            const week12 = new Date(startDate);
+            week12.setDate(startDate.getDate() + 84); // 12 weeks
+            
+            const suggestedTasks = [
+                {
+                    id: Date.now() + 1,
+                    name: 'Project Proposal',
+                    description: 'Submit initial project proposal outlining objectives, methodology, and timeline',
+                    date: startDate.toISOString().split('T')[0],
+                    assignedTo: [],
+                    priority: 'high',
+                    completed: false
+                },
+                {
+                    id: Date.now() + 2,
+                    name: 'Design Review',
+                    description: 'Conduct comprehensive design review meeting with all team members',
+                    date: week6.toISOString().split('T')[0],
+                    assignedTo: [],
+                    priority: 'high',
+                    completed: false
+                },
+                {
+                    id: Date.now() + 3,
+                    name: 'Mid-Project Presentation (Week 6)',
+                    description: 'Present progress update and design concepts to instructors',
+                    date: week6.toISOString().split('T')[0],
+                    assignedTo: [],
+                    priority: 'medium',
+                    completed: false
+                },
+                {
+                    id: Date.now() + 4,
+                    name: 'Final Presentation Rehearsal (Week 11)',
+                    description: 'Practice final presentation and gather feedback',
+                    date: week11.toISOString().split('T')[0],
+                    assignedTo: [],
+                    priority: 'high',
+                    completed: false
+                },
+                {
+                    id: Date.now() + 5,
+                    name: 'Prototype Demo Submission',
+                    description: 'Submit working prototype demonstration for evaluation',
+                    date: week12.toISOString().split('T')[0],
+                    assignedTo: [],
+                    priority: 'high',
+                    completed: false
+                },
+                {
+                    id: Date.now() + 6,
+                    name: 'Written Report',
+                    description: 'Submit comprehensive written report covering all project aspects',
+                    date: week12.toISOString().split('T')[0],
+                    assignedTo: [],
+                    priority: 'medium',
+                    completed: false
+                },
+                {
+                    id: Date.now() + 7,
+                    name: 'Individual Reflections',
+                    description: 'Each team member submits personal reflection on project experience and learning',
+                    date: week12.toISOString().split('T')[0],
+                    assignedTo: [],
+                    priority: 'low',
+                    completed: false
+                }
+            ];
+            
+            tasks = tasks.concat(suggestedTasks);
+            localStorage.setItem('stemTasks', JSON.stringify(tasks));
+            suggestedTasksAdded = true;
+            localStorage.setItem('suggestedTasksAdded', 'true');
+        }
+
+        function renderTeamMembers() {
+            const teamContainer = document.getElementById('teamMembers');
+            teamContainer.innerHTML = '';
+            
+            teamMembers.forEach((member, index) => {
+                const memberDiv = document.createElement('div');
+                memberDiv.className = 'team-member';
+                memberDiv.innerHTML = `
+                    <h3>Team Member ${index + 1}</h3>
+                    <label for="name${index}">Name:</label>
+                    <input type="text" id="name${index}" value="${member.name}" placeholder="Enter name">
+                    
+                    <label for="major${index}">Major:</label>
+                    <input type="text" id="major${index}" value="${member.major}" placeholder="Enter major">
+                    
+                    <label for="strengths${index}">Strengths:</label>
+                    <textarea id="strengths${index}" rows="3" placeholder="Enter strengths">${member.strengths}</textarea>
+                `;
+                teamContainer.appendChild(memberDiv);
+            });
+        }
+
+        function saveTeamMembers() {
+            teamMembers.forEach((member, index) => {
+                member.name = document.getElementById(`name${index}`).value;
+                member.major = document.getElementById(`major${index}`).value;
+                member.strengths = document.getElementById(`strengths${index}`).value;
+            });
+            localStorage.setItem('stemTeamMembers', JSON.stringify(teamMembers));
+            updateAssignedToOptions();
+            addSuggestedTasks();
+            renderTasks();
+            renderCalendar();
+            alert('Team information saved! Suggested tasks have been added with current team assignments.');
+        }
+
+        function updateAssignedToOptions() {
+            const select = document.getElementById('assignedTo');
+            select.innerHTML = '<option value="">Select team member(s)</option>';
+            teamMembers.forEach((member, index) => {
+                if (member.name.trim()) {
+                    const option = document.createElement('option');
+                    option.value = member.name;
+                    option.textContent = member.name;
+                    if (index === 0) {
+                        option.selected = true; // Default select teamMembers[0]
+                    }
+                    select.appendChild(option);
+                }
+            });
+        }
+
+        function renderCalendar() {
+            const calendar = document.getElementById('calendar');
+            const monthYear = document.getElementById('monthYear');
+            
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            
+            monthYear.textContent = currentDate.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'long' 
+            });
+            
+            // Clear previous calendar
+            calendar.innerHTML = '';
+            
+            // Add day headers
+            const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            daysOfWeek.forEach(day => {
+                const dayHeader = document.createElement('div');
+                dayHeader.className = 'calendar-day calendar-day-header';
+                dayHeader.textContent = day;
+                calendar.appendChild(dayHeader);
+            });
+            
+            // Get first day of month and last day
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const startDate = new Date(firstDay);
+            startDate.setDate(startDate.getDate() - firstDay.getDay());
+            
+            // Generate calendar days
+            for (let i = 0; i < 42; i++) {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'calendar-day';
+                
+                const currentDay = new Date(startDate);
+                currentDay.setDate(startDate.getDate() + i);
+                
+                const dayNumber = currentDay.getDate();
+                const isCurrentMonth = currentDay.getMonth() === month;
+                
+                if (isCurrentMonth) {
+                    dayElement.innerHTML = `<strong>${dayNumber}</strong>`;
+                    
+                    // Show tasks for this day
+                    const dayTasks = tasks.filter(task => {
+                        const taskDate = new Date(task.date);
+                        return taskDate.toDateString() === currentDay.toDateString();
+                    });
+                    
+                    if (dayTasks.length > 0) {
+                        dayTasks.forEach(task => {
+                            const taskDiv = document.createElement('div');
+                            taskDiv.className = 'task-item';
+                            taskDiv.innerHTML = `<small>${task.name} (${Array.isArray(task.assignedTo) ? task.assignedTo.join(', ') : task.assignedTo})</small>`;
+                            dayElement.appendChild(taskDiv);
+                        });
+                    }
+                } else {
+                    dayElement.innerHTML = `<span style="color: #ccc">${dayNumber}</span>`;
+                }
+                
+                calendar.appendChild(dayElement);
+            }
+        }
+
+        // Navigation buttons
+        document.getElementById('prevMonth').addEventListener('click', () => {
+            currentDate.setMonth(currentDate.getMonth() - 1);
+            renderCalendar();
+        });
+
+        document.getElementById('nextMonth').addEventListener('click', () => {
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            renderCalendar();
+        });
+
+        // Task form submission
+        document.getElementById('taskForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const taskName = document.getElementById('taskName').value;
+            const taskDescription = document.getElementById('taskDescription').value;
+            const taskDate = document.getElementById('taskDate').value;
+            const assignedTo = Array.from(document.getElementById('assignedTo').selectedOptions).map(option => option.value);
+            const priority = document.getElementById('priority').value;
+            
+            const newTask = {
+                id: Date.now(),
+                name: taskName,
+                description: taskDescription,
+                date: taskDate,
+                assignedTo: assignedTo,
+                priority: priority,
+                completed: false
+            };
+            
+            tasks.push(newTask);
+            localStorage.setItem('stemTasks', JSON.stringify(tasks));
+            
+            renderTasks();
+            renderCalendar();
+            
+            // Reset form
+            document.getElementById('taskForm').reset();
+        });
+
+        // Render tasks list
+        function renderTasks() {
+            const tasksList = document.getElementById('tasksList');
+            tasksList.innerHTML = '';
+            
+            if (tasks.length === 0) {
+                tasksList.innerHTML = '<p>No tasks yet. Create your first task above!</p>';
+                return;
+            }
+            
+            tasks.sort((a, b) => new Date(a.date) - new Date(b.date));
+            
+            tasks.forEach(task => {
+                const taskElement = document.createElement('div');
+                taskElement.className = 'task-item';
+                taskElement.innerHTML = `
+                    <div>
+                        <strong>${task.name}</strong> 
+                        <span class="task-date">${new Date(task.date).toLocaleDateString()}</span>
+                        <br>
+                        <small>Assigned to: ${Array.isArray(task.assignedTo) ? task.assignedTo.join(', ') : task.assignedTo} | Priority: ${task.priority}</small>
+                        ${task.description ? `<br><em>${task.description}</em>` : ''}
+                    </div>
+                `;
+                tasksList.appendChild(taskElement);
+            });
+        }
+
+        // Save team button
+        document.getElementById('saveTeam').addEventListener('click', saveTeamMembers);
+
+        // Initialize
+        renderTeamMembers();
+        updateAssignedToOptions();
+        renderCalendar();
+        renderTasks();
+    </script>
+</body>
+</html>
