@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UNL Director Workshop Hub</title>
+    <style>
+        :root {
+            --bg: #fff1f2;
+            --surface: #ffffff;
+            --surface-strong: #fee2e2;
+            --primary: #991b1b;
+            --primary-light: #fee2e2;
+            --accent: #b91c1c;
+            --text: #1f2937;
+            --muted: #6b7280;
+            --border: #f5c2c7;
+            --radius: 16px;
+            --shadow: 0 16px 40px rgba(153, 27, 27, 0.15);
+        }
+
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: Inter, system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        header {
+            background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%);
+            color: white;
+            padding: 34px 24px;
+            text-align: center;
+        }
+        header h1 {
+            margin: 0 0 10px;
+            font-size: clamp(2rem, 3vw, 3rem);
+        }
+        header p {
+            margin: 0;
+            max-width: 720px;
+            margin-left: auto;
+            margin-right: auto;
+            opacity: 0.9;
+        }
+        .logo {
+            max-height: 60px;
+            margin: 0 auto 22px;
+            display: block;
+        }
+        .director-card {
+            margin-top: 26px;
+            display: inline-flex;
+            align-items: center;
+            gap: 18px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .director-card img {
+            width: 148px;
+            height: 148px;
+            object-fit: cover;
+            border-radius: 22px;
+            border: 4px solid rgba(255,255,255,0.45);
+            box-shadow: 0 18px 35px rgba(0,0,0,0.18);
+        }
+        .director-copy {
+            max-width: 520px;
+            text-align: left;
+        }
+        .director-copy strong {
+            display: block;
+            font-size: 1rem;
+            margin-bottom: 6px;
+            letter-spacing: 0.01em;
+        }
+        main {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 28px 24px 40px;
+        }
+        .grid {
+            display: grid;
+            gap: 24px;
+        }
+        .cards {
+            display: grid;
+            gap: 18px;
+        }
+        .panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 26px;
+        }
+        .panel h2 {
+            margin-top: 0;
+            margin-bottom: 14px;
+            font-size: 1.35rem;
+        }
+        .panel p {
+            margin: 0 0 18px;
+            color: var(--muted);
+        }
+        .highlight {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 8px 12px;
+            border-radius: 999px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            margin-bottom: 18px;
+        }
+        .form-grid {
+            display: grid;
+            gap: 16px;
+        }
+        label {
+            display: block;
+            font-size: 0.9rem;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+        input, textarea, select, button {
+            width: 100%;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            font: inherit;
+            padding: 12px 14px;
+            background: white;
+            color: var(--text);
+        }
+        textarea { resize: vertical; min-height: 110px; }
+        button {
+            border: none;
+            background: var(--primary);
+            color: white;
+            cursor: pointer;
+            transition: transform 0.18s ease, background-color 0.18s ease;
+        }
+        button:hover { background: #7f1d1d; transform: translateY(-1px); }
+        .subtle-button {
+            background: #fef2f2;
+            color: var(--text);
+        }
+        .subtle-button:hover { background: #fee2e2; }
+        .section-grid {
+            grid-template-columns: 1fr;
+        }
+        .module-list, .note-list, .roster-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: grid;
+            gap: 12px;
+        }
+        .module-item, .note-item {
+            border: 1px solid #f5c2c7;
+            border-radius: 14px;
+            padding: 16px;
+            background: var(--surface-strong);
+            display: grid;
+            gap: 8px;
+        }
+        .module-top {
+            display: flex;
+            justify-content: space-between;
+            gap: 14px;
+            align-items: center;
+        }
+        .badge {
+            font-size: 0.8rem;
+            font-weight: 700;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        .badge.completed { background: #fce7f3; color: #9f1239; }
+        .note-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        .small-text {
+            font-size: 0.95rem;
+            color: var(--muted);
+        }
+        .resource-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 18px;
+        }
+        .resource-card {
+            background: var(--surface-strong);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 18px;
+        }
+        .resource-card h3 {
+            margin-top: 0;
+            margin-bottom: 8px;
+            font-size: 1rem;
+        }
+        .resource-card p {
+            margin: 0 0 10px;
+            color: var(--muted);
+        }
+        .resource-card a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .word-cloud {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            min-height: 100px;
+            padding: 14px;
+            border: 1px dashed #f5c2c7;
+            border-radius: 18px;
+            background: #fff1f2;
+        }
+        .word-cloud-tag {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 14px;
+            border-radius: 999px;
+            background: #fca5a5;
+            color: #7f1d1d;
+            cursor: pointer;
+            user-select: none;
+            transition: transform 0.18s ease, box-shadow 0.18s ease;
+            box-shadow: 0 6px 14px rgba(156, 24, 24, 0.12);
+        }
+        .word-cloud-tag:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 18px rgba(156, 24, 24, 0.18);
+        }
+        .word-cloud-empty {
+            color: var(--muted);
+            font-style: italic;
+        }
+        .comment-thread {
+            display: grid;
+            gap: 16px;
+        }
+        .thread-inputs {
+            display: grid;
+            gap: 14px;
+        }
+        .thread-inputs .small-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+        .thread-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: grid;
+            gap: 12px;
+        }
+        .thread-entry {
+            background: #fff1f2;
+            border: 1px solid #f5c2c7;
+            border-radius: 16px;
+            padding: 16px;
+            display: grid;
+            gap: 8px;
+        }
+        .thread-meta {
+            display: flex;
+            justify-content: space-between;
+            gap: 14px;
+            flex-wrap: wrap;
+            color: #991b1b;
+            font-size: 0.92rem;
+            font-weight: 600;
+        }
+        .thread-type {
+            background: #fef2f2;
+            color: #991b1b;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 0.85rem;
+        }
+        .thread-entry button {
+            width: fit-content;
+            padding: 8px 12px;
+            border: none;
+            background: #fbcfe8;
+            color: #9d174d;
+            border-radius: 999px;
+            cursor: pointer;
+        }
+        .thread-entry button:hover {
+            background: #f9a8d4;
+        }
+        .summary-row {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(120px, 1fr));
+            gap: 14px;
+            margin-top: 22px;
+        }
+        .summary-card {
+            background: var(--primary-light);
+            color: var(--primary);
+            border-radius: 14px;
+            padding: 18px;
+            border: 1px solid rgba(153, 27, 27, 0.15);
+        }
+        .summary-card strong { display: block; font-size: 1.75rem; margin-bottom: 6px; }
+        @media (max-width: 900px) {
+            .section-grid { grid-template-columns: 1fr; }
+            .summary-row { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <img class="logo" src="unl_logo.jpg" alt="UNL logo">
+        <h1>AI Policy Development Hub</h1>
+        <p>Develop AI policy, organize stakeholder input, track key policy modules, and capture concerns in one collaborative tool.</p>
+        <div class="director-card">
+            <img src="guy.jpg" alt="Director of the teaching department" />
+            <div class="director-copy">
+                <strong>Guy Trainin - Director of the Teaching Department</strong>
+                <p>Leading the UNL policy team developing a shared AI policy framework and guidance.</p>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="grid section-grid">
+            <section class="panel">
+                <h2>Policy planning</h2>
+                <p>Use this section to define the AI policy topic, key stakeholders, review date, and desired policy goals.</p>
+                <div class="form-grid">
+                    <div>
+                        <label for="workshopTitle">Policy topic</label>
+                        <input id="workshopTitle" placeholder="AI governance, data privacy, or model use guidelines">
+                    </div>
+                    <div>
+                        <label for="workshopDate">Review date</label>
+                        <input id="workshopDate" type="date">
+                    </div>
+                    <div>
+                        <label for="workshopAudience">Stakeholder group</label>
+                        <input id="workshopAudience" placeholder="Leadership, faculty, legal, student reps">
+                    </div>
+                    <div>
+                        <label for="workshopLocation">Policy owner</label>
+                        <input id="workshopLocation" placeholder="AI policy team lead or department owner">
+                    </div>
+                    <div>
+                        <label for="policyScope">Policy scope</label>
+                        <input id="policyScope" placeholder="Campus use, research systems, student data, teaching tools">
+                    </div>
+                    <div class="form-grid single">
+                        <label for="riskAreas">Key risk areas</label>
+                        <textarea id="riskAreas" placeholder="Example: bias, privacy, equity, safety, transparency..."></textarea>
+                    </div>
+                    <div class="form-grid single">
+                        <label for="workshopGoals">Key policy objectives</label>
+                        <textarea id="workshopGoals" placeholder="Example: ensure fairness, protect privacy, increase transparency..."></textarea>
+                    </div>
+                    <button id="saveWorkshop">Save policy plan</button>
+                </div>
+                <div class="summary-row">
+                    <div class="summary-card">
+                        <strong id="summaryTitle">—</strong>
+                        <span>Policy topic</span>
+                    </div>
+                    <div class="summary-card">
+                        <strong id="summaryDate">—</strong>
+                        <span>Review date</span>
+                    </div>
+                    <div class="summary-card">
+                        <strong id="summaryOwner">—</strong>
+                        <span>Policy owner</span>
+                    </div>
+                    <div class="summary-card">
+                        <strong id="summaryRisks">—</strong>
+                        <span>Key risks</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Removed AI training modules section to focus entirely on policy development -->
+        </div>
+
+        <div class="grid" style="margin-top: 24px;">
+
+            <section class="panel">
+                <h2>AI Word Cloud</h2>
+                <p>Add your concerns so your team can discuss the top issues together!</p>
+                <div class="form-grid" style="grid-template-columns: 1fr auto; align-items: end;">
+                    <div>
+                        <label for="cloudWord">Concern word</label>
+                        <input id="cloudWord" placeholder="Bias, privacy, transparency">
+                    </div>
+                    <button id="addCloudWord">Add word</button>
+                </div>
+                <div class="word-cloud" id="wordCloud"></div>
+                <p class="small-text">Click a word after discussion to remove it from the cloud.</p>
+            </section>
+
+            <section class="panel">
+                <h2>Staff comment thread</h2>
+                <p>Staff can share how they currently use AI or how they want to learn to use it.</p>
+                <div class="comment-thread">
+                    <div class="thread-inputs">
+                        <div class="small-row">
+                            <div>
+                                <label for="threadName">Your name</label>
+                                <input id="threadName" placeholder="Name or role">
+                            </div>
+                            <div>
+                                <label for="threadType">Response type</label>
+                                <select id="threadType">
+                                    <option value="Current use">Current use</option>
+                                    <option value="Learning goal">Learning goal</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div>
+                            <label for="threadComment">Comment</label>
+                            <textarea id="threadComment" placeholder="Describe how you currently use AI or what you want to learn."></textarea>
+                        </div>
+                        <button id="addThreadComment">Post comment</button>
+                    </div>
+                    <ul class="thread-list" id="threadList"></ul>
+                </div>
+            </section>
+
+            <section class="panel">
+                <h2>Resource toolkit</h2>
+                <p>Reference links and tools that help deliver strong workshops and training modules.</p>
+                <div class="resource-grid">
+                    <div class="resource-card">
+                        <h3>UNL Academic Integrity Involving AI</h3>
+                        <p>Click here for UNL's current policies and guidelines.</p>
+                        <a href="https://teaching.unl.edu/resources/ai/academic-integrity/">Academic Integrity</a>
+                    </div>
+                    <div class="resource-card">
+                        <h3>AI Policy Creation</h3>
+                        <p>Notes for leading AI conversations, ethics discussion, and tech exploration.</p>
+                        <a href="https://teaching.unl.edu/resources/ai/AI-Policy-Creation/">View facilitator guide</a>
+                    </div>
+                    <div class="resource-card">
+                        <h3>Teacher scenario artifact</h3>
+                        <p>This spot helps address teacher concerns based on their scenario and connects policy thinking to classroom needs.</p>
+                        <a href="https://claude.ai/public/artifacts/f04ea046-71b5-41a0-95f4-39c5c3a72a58" target="_blank" rel="noopener">Open artifact</a>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script>
+        const workshopTitle = document.getElementById('workshopTitle');
+        const workshopDate = document.getElementById('workshopDate');
+        const workshopAudience = document.getElementById('workshopAudience');
+        const workshopLocation = document.getElementById('workshopLocation');
+        const workshopGoals = document.getElementById('workshopGoals');
+        const saveWorkshop = document.getElementById('saveWorkshop');
+        const summaryTitle = document.getElementById('summaryTitle');
+        const summaryDate = document.getElementById('summaryDate');
+        const summaryAudience = document.getElementById('summaryAudience');
+
+        const cloudWord = document.getElementById('cloudWord');
+        const addCloudWord = document.getElementById('addCloudWord');
+        const wordCloud = document.getElementById('wordCloud');
+        const openThreadWindow = document.getElementById('openThreadWindow');
+
+        const threadName = document.getElementById('threadName');
+        const threadType = document.getElementById('threadType');
+        const threadComment = document.getElementById('threadComment');
+        const addThreadComment = document.getElementById('addThreadComment');
+        const threadList = document.getElementById('threadList');
+
+        let workshopPlan = JSON.parse(localStorage.getItem('unlDirectorWorkshopPlan') || '{}');
+
+        const policyScope = document.getElementById('policyScope');
+        const riskAreas = document.getElementById('riskAreas');
+        const summaryOwner = document.getElementById('summaryOwner');
+        const summaryRisks = document.getElementById('summaryRisks');
+
+        function renderWorkshop() {
+            summaryTitle.textContent = workshopPlan.title || 'No plan saved';
+            summaryDate.textContent = workshopPlan.date || '—';
+            summaryAudience.textContent = workshopPlan.audience || '—';
+            workshopTitle.value = workshopPlan.title || '';
+            workshopDate.value = workshopPlan.date || '';
+            workshopAudience.value = workshopPlan.audience || '';
+            workshopLocation.value = workshopPlan.location || '';
+            policyScope.value = workshopPlan.scope || '';
+            riskAreas.value = workshopPlan.risks || '';
+            workshopGoals.value = workshopPlan.goals || '';
+            summaryOwner.textContent = workshopPlan.owner || '—';
+            summaryRisks.textContent = workshopPlan.risks ? workshopPlan.risks.split(',')[0].trim() : '—';
+        }
+
+        function savePlan() {
+            workshopPlan = {
+                title: workshopTitle.value.trim() || 'Workshop plan saved',
+                date: workshopDate.value,
+                audience: workshopAudience.value.trim(),
+                location: workshopLocation.value.trim(),
+                goals: workshopGoals.value.trim()
+            };
+            localStorage.setItem('unlDirectorWorkshopPlan', JSON.stringify(workshopPlan));
+            renderWorkshop();
+        }
+
+        function renderModules() {
+            moduleList.innerHTML = '';
+            if (!modules.length) {
+                moduleList.innerHTML = '<li class="module-item"><span class="small-text">No modules added yet.</span></li>';
+                return;
+            }
+            modules.forEach((module, index) => {
+                const li = document.createElement('li');
+                li.className = 'module-item';
+                const statusText = module.completed ? 'Complete' : 'In progress';
+                li.innerHTML = `
+                    <div class="module-top">
+                        <strong>${module.name}</strong>
+                        <span class="badge ${module.completed ? 'completed' : ''}">${statusText}</span>
+                    </div>
+                    <div class="small-text">Focus: ${module.focus}</div>
+                    <div class="note-actions">
+                        <button class="subtle-button" data-action="toggle" data-index="${index}">${module.completed ? 'Mark incomplete' : 'Mark complete'}</button>
+                        <button class="subtle-button" data-action="remove" data-index="${index}">Remove</button>
+                    </div>
+                `;
+                moduleList.appendChild(li);
+            });
+        }
+
+        let wordCloudData = JSON.parse(localStorage.getItem('unlDirectorWordCloud') || '[]');
+        let threadComments = JSON.parse(localStorage.getItem('unlDirectorThreadComments') || '[]');
+
+        function renderWordCloud() {
+            wordCloud.innerHTML = '';
+            if (!wordCloudData.length) {
+                wordCloud.innerHTML = '<span class="word-cloud-empty">No concern words added yet.</span>';
+                return;
+            }
+            wordCloudData.sort((a, b) => b.count - a.count).forEach((item, index) => {
+                const tag = document.createElement('span');
+                tag.className = 'word-cloud-tag';
+                tag.dataset.index = index;
+                const size = Math.min(32, 14 + item.count * 4);
+                tag.style.fontSize = `${size}px`;
+                tag.textContent = `${item.word} (${item.count})`;
+                wordCloud.appendChild(tag);
+            });
+        }
+
+        function saveWordCloud() {
+            localStorage.setItem('unlDirectorWordCloud', JSON.stringify(wordCloudData));
+            renderWordCloud();
+        }
+
+        function renderThreadComments() {
+            threadList.innerHTML = '';
+            if (!threadComments.length) {
+                threadList.innerHTML = '<li class="thread-entry"><span class="small-text">No staff comments yet. Add one to capture how AI is used or what staff want to learn.</span></li>';
+                return;
+            }
+            threadComments.slice().reverse().forEach((item, index) => {
+                const li = document.createElement('li');
+                li.className = 'thread-entry';
+                li.dataset.index = index;
+                li.innerHTML = `
+                    <div class="thread-meta">
+                        <span>${item.name}</span>
+                        <span class="thread-type">${item.type}</span>
+                    </div>
+                    <div>${item.comment}</div>
+                    <div class="thread-meta">
+                        <span>${new Date(item.created).toLocaleString()}</span>
+                        <button data-index="${index}">Remove</button>
+                    </div>
+                `;
+                threadList.appendChild(li);
+            });
+        }
+
+        function saveThreadComments() {
+            localStorage.setItem('unlDirectorThreadComments', JSON.stringify(threadComments));
+            renderThreadComments();
+        }
+
+        function addThreadCommentEntry() {
+            const name = threadName.value.trim() || 'Anonymous';
+            const type = threadType.value;
+            const comment = threadComment.value.trim();
+            if (!comment) {
+                threadComment.focus();
+                return;
+            }
+            threadComments.push({ name, type, comment, created: new Date().toISOString() });
+            threadName.value = '';
+            threadComment.value = '';
+            saveThreadComments();
+        }
+
+        function addCloudEntry() {
+            const word = cloudWord.value.trim().toLowerCase();
+            if (!word) {
+                cloudWord.focus();
+                return;
+            }
+            const existing = wordCloudData.find(item => item.word === word);
+            if (existing) {
+                existing.count += 1;
+            } else {
+                wordCloudData.push({ word, count: 1 });
+            }
+            cloudWord.value = '';
+            saveWordCloud();
+        }
+
+        saveWorkshop.addEventListener('click', () => {
+            savePlan();
+        });
+
+
+        addCloudWord.addEventListener('click', () => {
+            addCloudEntry();
+        });
+
+        wordCloud.addEventListener('click', event => {
+            const tag = event.target.closest('.word-cloud-tag');
+            if (!tag) return;
+            const index = Number(tag.dataset.index);
+            wordCloudData.splice(index, 1);
+            saveWordCloud();
+        });
+
+        cloudWord.addEventListener('keydown', event => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                addCloudEntry();
+            }
+        });
+
+        openThreadWindow.addEventListener('click', () => {
+            openThreadCommentsWindow();
+        });
+
+        addThreadComment.addEventListener('click', () => {
+            addThreadCommentEntry();
+        });
+
+        threadList.addEventListener('click', event => {
+            const button = event.target.closest('button');
+            if (!button) return;
+            const index = Number(button.dataset.index);
+            const actualIndex = threadComments.length - 1 - index;
+            threadComments.splice(actualIndex, 1);
+            saveThreadComments();
+        });
+
+        threadComment.addEventListener('keydown', event => {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                addThreadCommentEntry();
+            }
+        });
+
+        renderWorkshop();
+        renderWordCloud();
+        renderThreadComments();
+    </script>
+</body>
+</html>
