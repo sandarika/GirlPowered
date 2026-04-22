@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Assignment Kanban</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        .kanban-board {
+            display: flex;
+            justify-content: space-around;
+            gap: 20px;
+        }
+        .column {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            width: 300px;
+            min-height: 400px;
+            padding: 10px;
+        }
+        .column h2 {
+            text-align: center;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .task-list {
+            min-height: 350px;
+        }
+        .task {
+            background-color: #e9ecef;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 10px;
+            margin-bottom: 10px;
+            cursor: move;
+            user-select: none;
+        }
+        .task:hover {
+            background-color: #dee2e6;
+        }
+        #add-task-form {
+            margin-top: 20px;
+            text-align: center;
+        }
+        #task-input {
+            padding: 8px;
+            width: 250px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            padding: 8px 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Student Assignment Kanban Board</h1>
+    <div class="kanban-board">
+        <div class="column" id="ready">
+            <h2>Ready</h2>
+            <div class="task-list" id="ready-list" ondrop="drop(event)" ondragover="allowDrop(event)">
+            </div>
+        </div>
+        <div class="column" id="in-progress">
+            <h2>In Progress</h2>
+            <div class="task-list" id="in-progress-list" ondrop="drop(event)" ondragover="allowDrop(event)">
+            </div>
+        </div>
+        <div class="column" id="working">
+            <h2>Working</h2>
+            <div class="task-list" id="working-list" ondrop="drop(event)" ondragover="allowDrop(event)">
+            </div>
+        </div>
+    </div>
+    <form id="add-task-form">
+        <input type="text" id="task-input" placeholder="Enter assignment name" required>
+        <button type="submit">Add Task</button>
+    </form>
+
+    <script>
+        const columns = ['ready', 'in-progress', 'working'];
+        let taskId = 0;
+
+        // Load tasks from localStorage
+        function loadTasks() {
+            columns.forEach(col => {
+                const tasks = JSON.parse(localStorage.getItem(col) || '[]');
+                const list = document.getElementById(col + '-list');
+                tasks.forEach(task => {
+                    addTaskToDOM(task.text, task.id, col);
+                });
+            });
+        }
+
+        // Save tasks to localStorage
+        function saveTasks() {
+            columns.forEach(col => {
+                const list = document.getElementById(col + '-list');
+                const tasks = Array.from(list.children).map(task => ({
+                    id: task.dataset.id,
+                    text: task.textContent
+                }));
+                localStorage.setItem(col, JSON.stringify(tasks));
+            });
+        }
+
+        // Add task to DOM
+        function addTaskToDOM(text, id, column) {
+            const task = document.createElement('div');
+            task.className = 'task';
+            task.draggable = true;
+            task.dataset.id = id;
+            task.textContent = text;
+            task.ondragstart = drag;
+            document.getElementById(column + '-list').appendChild(task);
+        }
+
+        // Add new task
+        document.getElementById('add-task-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const input = document.getElementById('task-input');
+            const text = input.value.trim();
+            if (text) {
+                taskId++;
+                addTaskToDOM(text, taskId, 'ready');
+                saveTasks();
+                input.value = '';
+            }
+        });
+
+        // Drag and drop functions
+        function allowDrop(ev) {
+            ev.preventDefault();
+        }
+
+        function drag(ev) {
+            ev.dataTransfer.setData("text", ev.target.dataset.id);
+        }
+
+        function drop(ev) {
+            ev.preventDefault();
+            const taskId = ev.dataTransfer.getData("text");
+            const task = document.querySelector(`[data-id="${taskId}"]`);
+            if (task && ev.target.classList.contains('task-list')) {
+                ev.target.appendChild(task);
+                saveTasks();
+            }
+        }
+
+        // Load tasks on page load
+        loadTasks();
+    </script>
+</body>
+</html>
