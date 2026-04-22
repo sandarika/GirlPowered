@@ -128,16 +128,49 @@
             border-radius: 4px;
             border-left: 4px solid #4CAF50;
         }
+        .task-item.completed {
+            background-color: #e2f5e2;
+            border-left-color: #2e7d32;
+            opacity: 0.9;
+        }
+        .task-item.completed strong {
+            text-decoration: line-through;
+            color: #2e7d32;
+        }
         .task-date {
             font-weight: bold;
             color: #4CAF50;
+        }
+        .task-link,
+        .task-action {
+            display: inline-block;
+            margin-top: 8px;
+            margin-right: 8px;
+            color: #ffffff;
+            background-color: #4CAF50;
+            padding: 6px 10px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 0.85rem;
+            border: none;
+            cursor: pointer;
+        }
+        .task-action {
+            background-color: #1976d2;
+        }
+        .task-action.delete {
+            background-color: #d32f2f;
+        }
+        .task-link:hover,
+        .task-action:hover {
+            opacity: 0.95;
         }
     </style>
 </head>
 <body>
     <header>
-        <h1>STEM Group Project Manager</h1>
-        <p>Collaborative project management for our STEM prototype - Final presentation: Week 12</p>
+        <h1>Girl Powered Project Manager</h1>
+        <p>Collaborative project management tool! Final presentation: Week 12</p>
     </header>
 
     <section class="team-section">
@@ -452,6 +485,28 @@
         });
 
         // Render tasks list
+        function buildDesignLoopLink(task) {
+            const params = new URLSearchParams({
+                task: task.name,
+                date: task.date,
+            });
+            return `design-loop-coach.html?${params.toString()}`;
+        }
+
+        function toggleTaskCompletion(taskId) {
+            tasks = tasks.map(task => task.id === taskId ? { ...task, completed: !task.completed } : task);
+            localStorage.setItem('stemTasks', JSON.stringify(tasks));
+            renderTasks();
+            renderCalendar();
+        }
+
+        function removeTask(taskId) {
+            tasks = tasks.filter(task => task.id !== taskId);
+            localStorage.setItem('stemTasks', JSON.stringify(tasks));
+            renderTasks();
+            renderCalendar();
+        }
+
         function renderTasks() {
             const tasksList = document.getElementById('tasksList');
             tasksList.innerHTML = '';
@@ -465,7 +520,7 @@
             
             tasks.forEach(task => {
                 const taskElement = document.createElement('div');
-                taskElement.className = 'task-item';
+                taskElement.className = `task-item${task.completed ? ' completed' : ''}`;
                 taskElement.innerHTML = `
                     <div>
                         <strong>${task.name}</strong> 
@@ -473,6 +528,10 @@
                         <br>
                         <small>Assigned to: ${Array.isArray(task.assignedTo) ? task.assignedTo.join(', ') : task.assignedTo} | Priority: ${task.priority}</small>
                         ${task.description ? `<br><em>${task.description}</em>` : ''}
+                        <br>
+                        <a class="task-link" href="${buildDesignLoopLink(task)}">Open Design Loop for this task</a>
+                        <button class="task-action${task.completed ? '' : ''}" onclick="toggleTaskCompletion(${task.id})">${task.completed ? 'Mark Incomplete' : 'Mark Complete'}</button>
+                        <button class="task-action delete" onclick="removeTask(${task.id})">Remove Task</button>
                     </div>
                 `;
                 tasksList.appendChild(taskElement);
