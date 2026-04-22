@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Place Value Coach</title>
+  <link rel="stylesheet" href="../../Downloads/place-value-coach.css" id="themeStylesheet">
+</head>
+<body>
+<div class="pvc-wrap">
+  <h2 class="sr-only">Place Value Coach</h2>
+  <div class="pvc-header">
+    <div class="pvc-subtitle">AI support for teaching tens and ones — designed for your classroom</div>
+  </div>
+
+  <div class="pvc-card">
+    <div class="pvc-row">
+      <div class="pvc-field">
+        <label class="pvc-label">Grade level</label>
+        <select id="grade">
+          <option value="K">Kindergarten</option>
+          <option value="1" selected>1st grade</option>
+          <option value="2">2nd grade</option>
+          <option value="3">3rd grade</option>
+        </select>
+      </div>
+      <div class="pvc-field">
+        <label class="pvc-label">Number pair or example</label>
+        <input type="text" id="numPair" placeholder="e.g. 23 and 32" value="23 and 32" />
+      </div>
+    </div>
+    <div class="pvc-row">
+      <div class="pvc-field full">
+        <label class="pvc-label">Misconception students are showing <span style="color:var(--color-text-secondary)">(optional)</span></label>
+        <input type="text" id="misconception" placeholder='e.g. "Students think 23 and 32 are the same because they have the same digits"' value='Students think 23 and 32 are the same because they have the same digits' />
+      </div>
+    </div>
+  </div>
+
+  <div class="pvc-card">
+    <div class="pvc-section-label">What do you need?</div>
+    <div class="btn-grid">
+      <button class="pvc-btn" data-action="explain" onclick="runAction(this)">
+        <span class="btn-icon">💡</span>Explain simply
+      </button>
+      <button class="pvc-btn" data-action="visual" onclick="runAction(this)">
+        <span class="btn-icon">🔲</span>Show a visual model
+      </button>
+      <button class="pvc-btn" data-action="analogy" onclick="runAction(this)">
+        <span class="btn-icon">🎯</span>Suggest an analogy
+      </button>
+      <button class="pvc-btn" data-action="predict" onclick="runAction(this)">
+        <span class="btn-icon">🔍</span>Predict misconceptions
+      </button>
+      <button class="pvc-btn" data-action="check" onclick="runAction(this)">
+        <span class="btn-icon">📋</span>Create a quick check
+      </button>
+      <button class="pvc-btn" data-action="reteach" onclick="runAction(this)">
+        <span class="btn-icon">🔄</span>Reteach differently
+      </button>
+    </div>
+  </div>
+
+  <div class="pvc-card" id="cssPanel" style="display:none;">
+    <div class="pvc-section-label">Page CSS</div>
+    <pre id="cssCode" style="white-space: pre-wrap; word-break: break-word; font-size: 13px; color: var(--color-text-primary); background: var(--color-background-secondary); padding: 1rem; border-radius: var(--border-radius-lg); border: 0.5px solid var(--color-border-tertiary); overflow: auto; max-height: 320px;"></pre>
+  </div>
+
+  <div class="pvc-output" id="outputBox" style="display:none;">
+    <div class="pvc-out-header">
+      <span class="pvc-out-label" id="outLabel">Response</span>
+      <span class="pvc-out-badge" id="outBadge">Grade 1</span>
+    </div>
+    <div class="pvc-out-body" id="outBody">
+      <div class="empty-state">Select a button above to get started.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const RESPONSES = {
+  explain: (grade, nums, misc) => ({
+    label: "Simple explanation",
+    html: `<div class="pvc-out-section">
+      <div class="pvc-out-text">The digits in <strong style="color:var(--color-text-primary)">${nums}</strong> appear in both numbers, but the value of each digit changes depending on where it sits.\n\nIn the first number, the digit in the tens place represents a full group of ten, while the digit in the ones place stands for single units.\n\nIn the second number, those positions are swapped, so the values are different even though the digits are the same.\n\nThat is the key idea: digit position determines value in place value.</div>
+    </div>
+    <hr class="pvc-divider">
+    <div class="pvc-out-section">
+      <div class="pvc-out-heading">Key vocabulary to reinforce</div>
+      <div class="chip-row">
+        <span class="chip">tens place</span>
+        <span class="chip">ones place</span>
+        <span class="chip">digit vs. value</span>
+        <span class="chip">position</span>
+      </div>
+    </div>`
+  }),
+
+  visual: (grade, nums, misc) => ({
+    label: "Visual model",
+    html: `<div class="pvc-out-section">
+      <div class="pvc-out-text" style="margin-bottom:12px;">Use base-ten blocks to make the difference concrete for <strong>${nums}</strong>. Show one number with tens blocks and ones blocks, then show the other number next to it.</div>
+      <div class="vis-block">
+        <div class="place-col">
+          <div class="place-col-label">TENS</div>
+          <div class="tens-unit"></div>
+          <div class="place-num" style="color:#185FA5">Tens</div>
+        </div>
+        <div class="place-col">
+          <div class="place-col-label">ONES</div>
+          <div class="ones-unit"></div>
+          <div class="place-num" style="color:#3B6D11">Ones</div>
+        </div>
+      </div>
+    </div>
+    <hr class="pvc-divider">
+    <div class="pvc-out-section">
+      <div class="pvc-out-heading">Hands-on extension</div>
+      <div class="pvc-out-text">Have students build both numbers with linking cubes, then compare the tens and ones in each. This makes the place value difference visible and memorable.</div>
+    </div>`
+  }),
+
+  analogy: (grade, nums, misc) => ({
+    label: "Analogy",
+    html: `<div class="pvc-out-section">
+      <div class="pvc-out-heading">The parking lot analogy</div>
+      <div class="pvc-out-text">Imagine a parking lot with two sections: a big section for school buses and a small section for bikes.\n\nIf you have the digits from ${nums}, the same two digits can mean very different totals depending on where they park. A digit in the bus section is worth a full group of ten, while that same digit in the bike section is just a single unit.\n\nThe tens place is the bus section (each bus holds 10 kids). The ones place is the bike section. This helps students see why ${nums} are not the same, even though they contain the same digits.</div>
+    </div>
+    <hr class="pvc-divider">
+    <div class="pvc-out-section">
+      <div class="pvc-out-heading">More classroom-ready analogies</div>
+      <div class="chip-row">
+        <span class="chip info">Egg cartons (tens) vs. loose eggs (ones)</span>
+        <span class="chip info">Rolls of dimes vs. single pennies</span>
+        <span class="chip info">Bags of 10 stickers vs. single stickers</span>
+      </div>
+    </div>`
+  }),
+
+  predict: (grade, nums, misc) => ({
+    label: "Predicted misconceptions",
+    html: `<div class="pvc-out-section">
+      <div class="pvc-out-heading">Common misconceptions to watch for</div>
+      <div class="pvc-out-text" style="margin-bottom:10px;">Based on this number pair and grade level, students often show these confusions:</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div style="padding:10px 12px;background:var(--color-background-secondary);border-radius:var(--border-radius-md);border-left:3px solid #EF9F27;">
+          <div style="font-size:13px;font-weight:500;color:#633806;margin-bottom:3px;">Same digits = same number</div>
+          <div class="pvc-out-text" style="font-size:13px;">Students see the digits in ${nums} and conclude the numbers are identical or interchangeable.</div>
+        </div>
+        <div style="padding:10px 12px;background:var(--color-background-secondary);border-radius:var(--border-radius-md);border-left:3px solid #EF9F27;">
+          <div style="font-size:13px;font-weight:500;color:#633806;margin-bottom:3px;">Counting digits, not value</div>
+          <div class="pvc-out-text" style="font-size:13px;">A student may say "both have a 2, so the 2 means 2 in both numbers" — not yet grasping positional value.</div>
+        </div>
+        <div style="padding:10px 12px;background:var(--color-background-secondary);border-radius:var(--border-radius-md);border-left:3px solid #EF9F27;">
+          <div style="font-size:13px;font-weight:500;color:#633806;margin-bottom:3px;">Reversing when writing</div>
+          <div class="pvc-out-text" style="font-size:13px;">When dictated the words for the first number in ${nums}, students may write the digits in the order they hear them instead of the place-value order.</div>
+        </div>
+      </div>
+    </div>`
+  }),
+
+  check: (grade, nums, misc) => ({
+    label: "Quick check",
+    html: `<div class="pvc-out-section">
+      <div class="pvc-out-heading">Exit ticket — 3 questions (3 minutes)</div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div style="padding:10px 12px;background:var(--color-background-secondary);border-radius:var(--border-radius-md);">
+          <div style="font-size:13px;font-weight:500;color:var(--color-text-secondary);margin-bottom:4px;">Question 1 — circle the right answer</div>
+          <div class="pvc-out-text" style="font-size:14px;">In the first number of <strong>${nums}</strong>, the leading digit means:&nbsp;&nbsp; <strong>A)</strong> that many ones &nbsp;&nbsp; <strong>B)</strong> that many tens &nbsp;&nbsp; <strong>C)</strong> that many groups of ten</div>
+        </div>
+        <div style="padding:10px 12px;background:var(--color-background-secondary);border-radius:var(--border-radius-md);">
+          <div style="font-size:13px;font-weight:500;color:var(--color-text-secondary);margin-bottom:4px;">Question 2 — draw it</div>
+          <div class="pvc-out-text" style="font-size:14px;">Draw base-ten blocks to show the second number in <strong>${nums}</strong>. Label the tens and ones.</div>
+        </div>
+        <div style="padding:10px 12px;background:var(--color-background-secondary);border-radius:var(--border-radius-md);">
+          <div style="font-size:13px;font-weight:500;color:var(--color-text-secondary);margin-bottom:4px;">Question 3 — explain</div>
+          <div class="pvc-out-text" style="font-size:14px;">A student says ${nums} are the same because they include the same digits. Do you agree? Explain why place matters.</div>
+        </div>
+      </div>
+    </div>
+    <hr class="pvc-divider">
+    <div class="pvc-out-section">
+      <div class="pvc-out-heading">What to look for</div>
+      <div class="chip-row">
+        <span class="chip">Q1 answer: B</span>
+        <span class="chip warn">Watch: students picking A or C</span>
+        <span class="chip">Q3 reveals depth of reasoning</span>
+      </div>
+    </div>`
+  }),
+
+  reteach: (grade, nums, misc) => ({
+    label: "Reteach strategy",
+    html: `<div class="pvc-out-section">
+      <div class="pvc-out-heading">Try a different entry point</div>
+      <div class="pvc-out-text" style="margin-bottom:12px;">If the digit-based explanation is not landing, shift to quantity before symbols.</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div style="padding:10px 12px;background:#EAF3DE;border-radius:var(--border-radius-md);">
+          <div style="font-size:13px;font-weight:500;color:#27500A;margin-bottom:3px;">Step 1 — start with the objects, not the numbers</div>
+          <div class="pvc-out-text" style="font-size:13px;color:#3B6D11;">Put out bundles of ten objects and loose ones that match the digits in ${nums}. Ask: "How many objects do we have?" Then swap the bundles and ones. "Same or different? How do you know?"</div>
+        </div>
+        <div style="padding:10px 12px;background:#EAF3DE;border-radius:var(--border-radius-md);">
+          <div style="font-size:13px;font-weight:500;color:#27500A;margin-bottom:3px;">Step 2 — connect to the written number last</div>
+          <div class="pvc-out-text" style="font-size:13px;color:#3B6D11;">Only after students feel the difference physically, write ${nums} next to the first arrangement. Say: "This digit tells me tens. This one tells me ones."</div>
+        </div>
+        <div style="padding:10px 12px;background:#EAF3DE;border-radius:var(--border-radius-md);">
+          <div style="font-size:13px;font-weight:500;color:#27500A;margin-bottom:3px;">Step 3 — use a place value mat with color coding</div>
+          <div class="pvc-out-text" style="font-size:13px;color:#3B6D11;">Give students a two-column mat (blue = tens, green = ones) and have them stamp or draw cubes before writing the digit. The color association builds positional awareness.</div>
+        </div>
+      </div>
+    </div>`
+  })
+};
+
+let activeBtn = null;
+
+async function runAction(btn) {
+  if (activeBtn) activeBtn.classList.remove('active');
+  btn.classList.add('active');
+  activeBtn = btn;
+
+  const action = btn.dataset.action;
+  const grade = document.getElementById('grade').value;
+  const nums = document.getElementById('numPair').value || '23 and 32';
+  const misc = document.getElementById('misconception').value || '';
+  const gradeLabel = { K: 'Kindergarten', '1': 'Grade 1', '2': 'Grade 2', '3': 'Grade 3' }[grade];
+
+  const box = document.getElementById('outputBox');
+  box.style.display = 'block';
+  document.getElementById('outBadge').textContent = gradeLabel;
+
+  const body = document.getElementById('outBody');
+  const outLabel = document.getElementById('outLabel');
+
+  body.className = 'pvc-out-body loading';
+  body.innerHTML = '<div class="spinner"></div><span>Thinking through your classroom...</span>';
+
+  await new Promise(r => setTimeout(r, 900 + Math.random() * 500));
+
+  try {
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1000,
+        system: `You are Place Value Coach, an AI assistant for early elementary teachers. 
+Your tone is warm, practical, and classroom-ready. Always respond with content that is immediately usable by a teacher.
+Grade context: ${gradeLabel}. 
+Number example: ${nums}. 
+Student misconception observed: ${misc || 'not specified'}.
+Keep responses concise, specific, and formatted as clean prose with occasional short lists. Do not use markdown headers with ## — use plain bold text or short labels instead. Focus on the numbers provided.`,
+        messages: [{
+          role: "user",
+          content: getPrompt(action, grade, nums, misc)
+        }]
+      })
+    });
+
+    const data = await response.json();
+    const text = data.content?.find(b => b.type === 'text')?.text || '';
+
+    outLabel.textContent = RESPONSES[action](grade, nums, misc).label;
+    body.className = 'pvc-out-body';
+
+    if (action === 'visual') {
+      body.innerHTML = RESPONSES.visual(grade, nums, misc).html;
+    } else {
+      body.innerHTML = `<div class="pvc-out-text">${escapeAndFormat(text)}</div>`;
+    }
+  } catch (e) {
+    outLabel.textContent = RESPONSES[action](grade, nums, misc).label;
+    body.className = 'pvc-out-body';
+    body.innerHTML = RESPONSES[action](grade, nums, misc).html;
+  }
+
+  box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function getPrompt(action, grade, nums, misc) {
+  const prompts = {
+    explain: `Explain in simple, teacher-friendly language why the digits in ${nums} have different values depending on their position. Write as if explaining to a student, but framed for the teacher to use or read aloud. 2-3 short paragraphs max.`,
+    analogy: `Give 2-3 creative, age-appropriate analogies a ${grade === 'K' ? 'kindergarten' : 'grade ' + grade} teacher could use to help students understand why ${nums} have different values even though they use the same digits. Make the analogies concrete and familiar to young children.`,
+    predict: `List the top 3-4 misconceptions a ${grade === 'K' ? 'kindergarten' : 'grade ' + grade} student might have about place value when working with ${nums}. ${misc ? `The teacher has already noticed: "${misc}". Add to or expand on this.` : ''} For each misconception, include a brief note on what it reveals about the student's thinking.`,
+    check: `Create a 3-question quick formative check (exit ticket) for ${grade === 'K' ? 'kindergarten' : 'grade ' + grade} students on place value using ${nums} as the focus. Include one multiple choice, one draw/show it, and one explain/justify question. Keep language simple and age-appropriate.`,
+    reteach: `Suggest 2-3 alternative instructional approaches for reteaching place value with ${nums} to ${grade === 'K' ? 'kindergarten' : 'grade ' + grade} students. ${misc ? `The current misconception is: "${misc}".` : ''} Each approach should be hands-on or use a different entry point than typical digit-focused instruction.`
+  };
+  return prompts[action] || prompts.explain;
+}
+
+function escapeAndFormat(text) {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--color-text-primary)">$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    .replace(/\n/g, '<br>');
+}
+
+async function toggleCSS() {
+  const panel = document.getElementById('cssPanel');
+  const btn = document.getElementById('showCssBtn');
+  const styleTag = document.getElementById('pageStyle');
+  const linkTag = document.getElementById('themeStylesheet');
+  const cssCode = document.getElementById('cssCode');
+
+  if (panel.style.display === 'none') {
+    panel.style.display = 'block';
+    btn.textContent = 'Hide CSS';
+    if (styleTag) {
+      cssCode.textContent = styleTag.textContent.trim();
+    } else if (linkTag) {
+      try {
+        const response = await fetch(linkTag.href);
+        cssCode.textContent = response.ok ? await response.text() : 'Unable to load CSS.';
+      } catch (err) {
+        cssCode.textContent = 'Unable to load CSS from linked file.';
+      }
+    } else {
+      cssCode.textContent = 'CSS not found.';
+    }
+  } else {
+    panel.style.display = 'none';
+    btn.textContent = 'Show CSS';
+  }
+}
+</script>
+</body>
+</html>
